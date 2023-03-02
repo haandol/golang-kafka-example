@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/go-playground/validator/v10 v10.11.2
+	github.com/google/uuid v1.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/twmb/franz-go v1.12.1
 	github.com/twmb/franz-go/plugin/kzap v1.1.1

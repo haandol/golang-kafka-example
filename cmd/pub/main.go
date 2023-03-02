@@ -2,14 +2,21 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/haandol/golang-kafka-example/pkg/config"
 	"github.com/haandol/golang-kafka-example/pkg/connector/producer"
+	"github.com/haandol/golang-kafka-example/pkg/types"
 	"github.com/haandol/golang-kafka-example/pkg/util"
+)
+
+const (
+	topic = "test"
 )
 
 func init() {
@@ -39,16 +46,26 @@ func main() {
 				logger.Errorw("error on job", "err", err)
 				return
 			default:
-				now := time.Now()
-				value := now.Format(time.RFC3339)
+				msg := types.Message{
+					Name:      "Heartbeat",
+					ID:        uuid.NewString(),
+					Version:   "1.0.0",
+					Body:      fmt.Sprintf("tick %v", key),
+					CreatedAt: time.Now().Format(time.RFC3339),
+				}
+				v, err := json.Marshal(msg)
+				if err != nil {
+					logger.Errorw("error on json marshal", "err", err)
+					return
+				}
 
 				ctx := context.Background()
-				logger.Infow("produce message", "topic", "test", "key", key, "value", value)
-				p.Produce(ctx, "test", fmt.Sprintf("%v", key), []byte(value))
+				logger.Infow("produce message", "topic", topic, "key", key, "msg", msg)
+				p.Produce(ctx, topic, fmt.Sprintf("%v", key), v)
 			}
 
 			key++
-			time.Sleep(1 * time.Second)
+			time.Sleep(2 * time.Second)
 		}
 	}()
 
